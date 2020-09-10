@@ -1,4 +1,4 @@
-name: .NET Core
+name: Build & Publish
 
 on:
   push:
@@ -13,13 +13,31 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+      
     - name: Setup .NET Core
       uses: actions/setup-dotnet@v1
       with:
         dotnet-version: 3.1.301
+    
     - name: Install dependencies
       run: dotnet restore
+    
     - name: Build
       run: dotnet build --configuration Release --no-restore
+    
     - name: Test
       run: dotnet test --no-restore --verbosity normal
+    
+    - name: Publish
+      run: dotnet publish Skrawl.csproj --configuration Release
+    
+    - name: Github Pages
+      if: ${{ github.ref == 'refs/heads/master }}
+      uses: peaceiris/actions-gh-pages@v3.6.1
+      with:
+        github_token: ${{ secrets.PUBLISH_TOKEN }}
+        publish_branch: gh-pages
+        publish_dir: bin/Release/netstandard2.1/publish/wwwroot
+        allow_empty_commit: false
+        keep_files: false
+        force_orphan: true
