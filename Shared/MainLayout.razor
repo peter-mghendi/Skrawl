@@ -1,8 +1,13 @@
 ﻿@inherits LayoutComponentBase
+@inject IAuthenticationService AuthenticationService
+@inject NavigationManager NavigationManager
 
+@if (AuthenticationService.Token != null)
+{
 <div class="sidebar">
     <NavMenu />
 </div>
+}
 
 <div class="main">
     <div class="top-row px-4">
