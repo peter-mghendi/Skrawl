@@ -1,3 +1,6 @@
+using System;
+using System.Net;
+using System.Net.Http;
 using Skrawl.Models;
 using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
@@ -10,14 +13,14 @@ namespace Skrawl.Services
         private NavigationManager _navigationManager;
         private ILocalStorageService _localStorageService;
 
-        // public User User { get; private set; }
         public LoginResult Token { get; private set; }
 
         public AuthenticationService(
             IHttpService httpService,
             NavigationManager navigationManager,
             ILocalStorageService localStorageService
-        ) {
+        )
+        {
             _httpService = httpService;
             _navigationManager = navigationManager;
             _localStorageService = localStorageService;
@@ -25,27 +28,43 @@ namespace Skrawl.Services
 
         public async Task Initialize()
         {
-            // User = await _localStorageService.GetItem<User>("user");
             Token = await _localStorageService.GetItem<LoginResult>("token");
         }
 
         public async Task Login(string email, string password)
         {
-            // User = await _httpService.Post<User>("/users/authenticate", new { username, password });
-            // await _localStorageService.SetItem("user", User);
-            
-            Token = await _httpService.Post<LoginResult>("/users/authenticate", new { email, password });
-            await _localStorageService.SetItem<LoginResult>("token", Token);
+            try
+            {
+                Token = await _httpService.Post<LoginResult>("api/users/tokens", new { email, password });
+                await _localStorageService.SetItem<LoginResult>("token", Token);
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception(ex.Data["StatusCode"] switch
+                {
+                    HttpStatusCode.BadRequest => "Invalid login credentials.",
+                    HttpStatusCode.NotFound => "Invalid login credentials.",
+                    _ => "Something went wrong, please try again later."
+                });
+            }
         }
 
         public async Task Logout()
         {
+            try
+            {
+                await _httpService.Post("api/users/tokens/invalidate");
+            }
+            catch (HttpRequestException ex) when (ex.Data.Contains("StatusCode"))
+            {
+                throw new Exception(ex.Data["StatusCode"] switch
+                {
+                    _ => "Something went wrong, please try again later."
+                });
+            }
+            
             Token = null;
-            await _localStorageService.RemoveItem("token");    
-
-            // User = null;
-            // await _localStorageService.RemoveItem("user");
-
+            await _localStorageService.RemoveItem("token");
             _navigationManager.NavigateTo("login");
         }
     }

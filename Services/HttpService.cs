@@ -10,6 +10,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Skrawl.Helpers;
 
 namespace Skrawl.Services
 {
@@ -38,11 +39,22 @@ namespace Skrawl.Services
             return await sendRequest<T>(request);
         }
 
-        public async Task<T> Post<T>(string uri, object value)
+        public async Task<T> Post<T>(string uri, object value = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+            if (value != null) {
+                request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+            }
             return await sendRequest<T>(request);
+        }
+
+        public async Task Post(string uri, object value = null)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Post, uri);
+            if (value != null) {
+                request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+            }
+            await sendRequest(request);
         }
 
         // helper methods
@@ -50,7 +62,6 @@ namespace Skrawl.Services
         private async Task<T> sendRequest<T>(HttpRequestMessage request)
         {
             // add jwt auth header if user is logged in and request is to the api url
-            // var user = await _localStorageService.GetItem<User>("user");
             var token = await _localStorageService.GetItem<LoginResult>("token");
 
             var isApiUrl = !request.RequestUri.IsAbsoluteUri;
@@ -66,14 +77,35 @@ namespace Skrawl.Services
                 return default;
             }
 
-            // throw exception on error response
-            if (!response.IsSuccessStatusCode)
-            {
-                var error = await response.Content.ReadFromJsonAsync<Dictionary<string, string>>();
-                throw new Exception(error["message"]);
-            }
+            // You're on timeout till you're fixed 
+            // response.EnsureSuccessStatusCode();
+
+            response.CheckResponseSuccess();
 
             return await response.Content.ReadFromJsonAsync<T>();
+        }
+
+        private async Task sendRequest(HttpRequestMessage request)
+        {
+            var token = await _localStorageService.GetItem<LoginResult>("token");
+
+            var isApiUrl = !request.RequestUri.IsAbsoluteUri;
+            if (token != null && isApiUrl)
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token.AccessToken);
+
+            using var response = await _httpClient.SendAsync(request);
+
+            // auto logout on 401 response
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
+            {
+                _navigationManager.NavigateTo("logout");
+                return;
+            }
+
+            // You're on timeout till you're fixed 
+            // response.EnsureSuccessStatusCode();
+
+            response.CheckResponseSuccess();
         }
     }
 }

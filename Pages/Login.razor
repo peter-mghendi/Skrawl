@@ -4,19 +4,19 @@
 @inject NavigationManager NavigationManager
 
 <div class="col-md-6 offset-md-3 mt-5">
-    <div class="alert alert-info">
+    @* <div class="alert alert-info">
         Username: user@mail.com<br />
-        Password: password
-    </div>
+        Password: passcode
+    </div> *@
     <div class="card">
         <h4 class="card-header">Skrawl Login</h4>
         <div class="card-body">
             <EditForm Model="@model" OnValidSubmit="HandleValidSubmit">
                 <DataAnnotationsValidator />
                 @if (!string.IsNullOrEmpty(error)) {
-                    <div class="alert alert-danger alert-dismissible fade show mt-3 mb-0">
+                    <div class="alert alert-danger alert-dismissible fade show">
                         @error
-                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close" @onclick="ClearError">
                             <span aria-hidden="true">&times;</span>
                         </button>
                     </div>
@@ -31,11 +31,11 @@
                     <InputText @bind-Value="model.Password" type="password" class="form-control" />
                     <ValidationMessage For="@(() => model.Password)" />
                 </div>
-                <button class="btn btn-primary">
+                <button class="btn btn-primary" disabled=@loading>
                     @if (loading) {
                         <span class="spinner-border spinner-border-sm mr-1"></span>
                     }
-                    Login
+                    @buttonText
                 </button>
             </EditForm>
         </div>
@@ -44,7 +44,8 @@
 
 @code {
     private Model model = new Model();
-    private bool loading;
+    private bool loading = false;
+    private string buttonText = "Login";
     private string error;
 
     protected override void OnInitialized()
@@ -59,6 +60,8 @@
     private async void HandleValidSubmit()
     {
         loading = true;
+        buttonText = "Loading...";
+        
         try
         {
             await AuthenticationService.Login(model.Email, model.Password);
@@ -69,9 +72,12 @@
         {
             error = ex.Message;
             loading = false;
+            buttonText = "Login";
             StateHasChanged();
         }
     }
+
+    private void ClearError() => error = null;
 
     private class Model
     {
