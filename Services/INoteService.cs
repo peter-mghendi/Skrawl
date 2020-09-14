@@ -6,6 +6,6 @@ namespace Skrawl.Services
 {
     public interface INoteService
     {
-        Task<IEnumerable<NoteDTO>> GetAll();
+        Task<IList<NoteDTO>> GetAll();
     }
 }

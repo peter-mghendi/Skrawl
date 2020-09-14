@@ -1,0 +1,68 @@
+﻿@page "/notes"
+@attribute [Authorize]
+@inject INoteService NoteService
+
+<div class="d-flex mb-4">
+<h3 class="mr-auto">Notes</h3>
+<button class="btn btn-outline-primary" @onclick="@(async () => await RefreshNotes())" disabled=@loading>
+    @if (loading) {
+        <span class="spinner-grow spinner-grow-sm mr-1" role="status"></span>
+    } 
+    @(loading ? "Refreshing..." : "Refresh  ")
+</button>
+</div>
+
+@if (notes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+<ul class="list-group list-group-flush">
+    @foreach (var note in notes)
+    {
+        <li class="list-group-item">
+            <div class="d-flex">
+            <p class="lead mr-auto">@note.Title</p>
+            @if (!string.IsNullOrWhiteSpace(note.Body)) {
+                <button class="btn" @onclick="() => ToggleExpandedItem(note.Id)">
+                    <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
+                </button>
+            }    
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(note.Body)) {
+                <p class="details @(expandedItem == note.Id ? "" : "d-none")">@note.Body</p>
+            }
+        </li>
+    }
+</ul>
+}
+
+@code {
+    private long expandedItem = -1;
+    private bool loading = false;
+    private IList<NoteDTO> notes;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshNotes();
+    }
+
+    private async Task RefreshNotes()
+    {
+        loading = true;
+        notes = await NoteService.GetAll();
+        loading = false;
+    }
+
+    private void ToggleExpandedItem(long id)
+    {
+        if (expandedItem == id) {
+            expandedItem = -1;
+            return;
+        }
+
+        expandedItem = id;
+    }
+}

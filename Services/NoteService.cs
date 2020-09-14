@@ -1,5 +1,6 @@
 using Skrawl.Models;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Skrawl.Services
@@ -13,9 +14,9 @@ namespace Skrawl.Services
             _httpService = httpService;
         }
 
-        public async Task<IEnumerable<NoteDTO>> GetAll()
+        public async Task<IList<NoteDTO>> GetAll()
         {
-            return await _httpService.Get<IEnumerable<NoteDTO>>("/notes");
+            return (await _httpService.Get<IEnumerable<NoteDTO>>("api/me/notes")).ToList();
         }
     }
 }

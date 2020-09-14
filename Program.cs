@@ -19,14 +19,15 @@ namespace Skrawl
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-             builder.Services
-                .AddScoped<IAuthenticationService, AuthenticationService>()
-                .AddScoped<IUserService, UserService>()
-                .AddScoped<IHttpService, HttpService>()
-                .AddScoped<ILocalStorageService, LocalStorageService>();
+            builder.Services
+               .AddScoped<IAuthenticationService, AuthenticationService>()
+               .AddScoped<INoteService, NoteService>()
+               .AddScoped<IHttpService, HttpService>()
+               .AddScoped<ILocalStorageService, LocalStorageService>();
 
             // configure http client
-            builder.Services.AddScoped(x => {
+            builder.Services.AddScoped(x =>
+            {
                 var apiUrl = new Uri(builder.Configuration["apiUrl"]);
 
                 // use fake backend if "fakeBackend" is "true" in appsettings.json
@@ -35,6 +36,8 @@ namespace Skrawl
 
                 return new HttpClient() { BaseAddress = apiUrl };
             });
+
+            Console.WriteLine(builder.HostEnvironment.BaseAddress);
 
             // builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 
