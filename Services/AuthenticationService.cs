@@ -35,7 +35,7 @@ namespace Skrawl.Services
         {
             try
             {
-                Token = await _httpService.Post<LoginResult>("api/users/tokens", new { email, password });
+                Token = await _httpService.PostAsync<LoginResult>("api/users/tokens", new { email, password });
                 await _localStorageService.SetItem<LoginResult>("token", Token);
             }
             catch (HttpRequestException ex)
@@ -53,7 +53,7 @@ namespace Skrawl.Services
         {
             try
             {
-                await _httpService.Post("api/users/tokens/invalidate");
+                await _httpService.PostAsync("api/users/tokens/invalidate");
             }
             catch (HttpRequestException ex) when (ex.Data.Contains("StatusCode"))
             {

@@ -26,16 +26,19 @@ else
         {
             <li class="list-group-item">
                 <div class="d-flex">
-                <p class="lead mr-auto">@note.Title</p>
+                    <p class="lead mr-auto">@note.Title</p>
 
-                @if (!string.IsNullOrWhiteSpace(note.Body)) {
-                    <button class="btn control" @onclick="() => ToggleExpandedItem(note.Id)">
-                        <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
+                    @if (!string.IsNullOrWhiteSpace(note.Body)) {
+                        <button class="btn control" @onclick="() => ToggleExpandedItem(note.Id)">
+                            <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
+                        </button>
+                    }    
+                    <button class="btn control" @onclick="async () => await ShowEditNoteAsync(note)">
+                        <i class="fas fa-edit"></i>
                     </button>
-                }    
-                <button class="btn control" @onclick="async () => await ShowEditNoteAsync(note)">
-                    <i class="fas fa-edit"></i>
-                </button>
+                    <button class="btn control" @onclick="async () => await DeleteNoteAsync(note.Id)">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
                 </div>
 
                 @if (!string.IsNullOrWhiteSpace(note.Body)) {
@@ -64,7 +67,7 @@ else
         loading = true;
         try
         {
-            notes = await NoteService.GetAll();
+            notes = await NoteService.GetAllAsync();
         }
         catch (Exception ex)
         {
@@ -92,5 +95,11 @@ else
         
         if (isNew) notes.Add(data);
         else notes[notes.FindIndex(n => n.Id == data.Id)] = data;
+    }
+
+    async Task DeleteNoteAsync(long id)
+    {
+        var note = await NoteService.DeleteAsync(id);
+        notes.RemoveAll(n => n.Id == note.Id);
     }
 }

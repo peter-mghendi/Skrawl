@@ -16,18 +16,24 @@ namespace Skrawl.Services
             _httpService = httpService;
         }
 
-        public async Task<List<NoteDTO>> GetAll()
+        public async Task<List<NoteDTO>> GetAllAsync()
         {
-            return (await _httpService.Get<IEnumerable<NoteDTO>>(_notesUrl)).ToList();
+            return (await _httpService.GetAsync<IEnumerable<NoteDTO>>(_notesUrl)).ToList();
         }
 
-        public async Task<NoteDTO> Save(NoteDTO note) 
+        public async Task<NoteDTO> SaveAsync(NoteDTO note) 
         {
             if (note.Id < 0) 
-                return await _httpService.Post<NoteDTO>(_notesUrl, note);
+                return await _httpService.PostAsync<NoteDTO>(_notesUrl, note);
             
-            await _httpService.Put($"{_notesUrl}/{note.Id}", note);
+            await _httpService.PutAsync($"{_notesUrl}/{note.Id}", note);
             return note;
+        }
+
+        
+        public async Task<NoteDTO> DeleteAsync(long id)
+        {
+            return await _httpService.DeleteAsync<NoteDTO>($"{_notesUrl}/{id}");
         }
     }
 }

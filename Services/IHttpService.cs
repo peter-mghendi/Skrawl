@@ -4,9 +4,10 @@ namespace Skrawl.Services
 {
     public interface IHttpService
     {
-        Task<T> Get<T>(string uri);
-        Task Put(string uri, object value = null);
-        Task<T> Post<T>(string uri, object value = null);
-        Task Post(string uri, object value = null);
+        Task<T> GetAsync<T>(string uri);
+        Task PutAsync(string uri, object value = null);
+        Task<T> PostAsync<T>(string uri, object value = null);
+        Task PostAsync(string uri, object value = null);
+        Task<T> DeleteAsync<T>(string uri);
     }
 }

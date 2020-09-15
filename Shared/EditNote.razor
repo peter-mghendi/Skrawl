@@ -54,7 +54,7 @@
     
         try
         {
-            Note = await NoteService.Save(Note);
+            Note = await NoteService.SaveAsync(Note);
             var result = ModalResult.Ok<NoteDTO>(Note);
             await BlazoredModal.Close(result);
         }

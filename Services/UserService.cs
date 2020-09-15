@@ -15,7 +15,7 @@ namespace Skrawl.Services
 
         public async Task<IEnumerable<User>> GetAll()
         {
-            return await _httpService.Get<IEnumerable<User>>("/users");
+            return await _httpService.GetAsync<IEnumerable<User>>("/users");
         }
     }
 }
