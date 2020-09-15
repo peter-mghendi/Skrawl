@@ -7,5 +7,6 @@ namespace Skrawl.Services
     public interface INoteService
     {
         Task<IList<NoteDTO>> GetAll();
+        Task<NoteDTO> Save(NoteDTO note);
     }
 }

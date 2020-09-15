@@ -18,5 +18,17 @@ namespace Skrawl.Services
         {
             return (await _httpService.Get<IEnumerable<NoteDTO>>("api/me/notes")).ToList();
         }
+
+        public async Task<NoteDTO> Save(NoteDTO note)
+        {
+            return await (note.Id < 0 ?
+                _httpService.Post<NoteDTO>("api/me/notes", new
+                {
+                    title = note.Title,
+                    body = note.Body
+                }) :
+                default
+            );
+        }
     }
 }

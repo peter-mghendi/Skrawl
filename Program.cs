@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Skrawl.Services;
 using Skrawl.Helpers;
+using Blazored.Modal;
+using Blazored.Modal.Services;
 
 namespace Skrawl
 {
@@ -20,6 +22,7 @@ namespace Skrawl
             builder.RootComponents.Add<App>("app");
 
             builder.Services
+                .AddBlazoredModal()
                .AddScoped<IAuthenticationService, AuthenticationService>()
                .AddScoped<INoteService, NoteService>()
                .AddScoped<IHttpService, HttpService>()
@@ -36,8 +39,6 @@ namespace Skrawl
 
                 return new HttpClient() { BaseAddress = apiUrl };
             });
-
-            Console.WriteLine(builder.HostEnvironment.BaseAddress);
 
             // builder.Services.AddTransient(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
 

@@ -1,0 +1,73 @@
+﻿@using System.ComponentModel.DataAnnotations
+@inject INoteService NoteService
+
+<EditForm Model="@Note" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+
+    @if (!string.IsNullOrEmpty(error)) {
+        <div class="alert alert-danger alert-dismissible fade show">
+            @error
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close" @onclick="ClearError">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="form-group">
+        <label for="title">Title*</label>
+        <InputText @bind-Value="@Note.Title" type="text" class="form-control" id="title" />
+        <ValidationMessage For="@(() => Note.Title)" />
+    </div>
+
+    <div class="form-group">
+        <label for="body">Body</label>
+        <InputTextArea @bind-Value="@Note.Body" class="form-control" id="body" rows="5"/>
+        <ValidationMessage For="@(() => Note.Body)" />
+    </div>
+
+    <button type="submit" class="btn btn-outline-primary" disabled=@loading>
+        @if (loading) {
+        <span class="spinner-grow spinner-grow-sm mr-1" role="status"></span>
+    } 
+    @(loading ? "Saving..." : "Save")
+    </button>
+    <button @onclick="BlazoredModal.Cancel" class="btn btn-outline-secondary" disabled=@loading>Cancel</button>
+</EditForm>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
+
+    [Parameter] public long NoteId { get; set; }
+
+    private NoteDTO Note;
+
+    private string error;
+
+    private bool loading = false;
+
+    protected override void OnInitialized()
+    {
+        Note = new NoteDTO() { Id = -1 };
+        @* Note = NoteService.Load(NoteId); *@
+    }
+
+    private async void HandleValidSubmit()
+    {
+        loading = true;
+    
+        try
+        {
+            Note = await NoteService.Save(Note);
+            var result = ModalResult.Ok<NoteDTO>(Note);
+            await BlazoredModal.Close(result);
+        }
+        catch (Exception ex)
+        {
+            error = ex.Message;
+            loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private void ClearError() => error = null;
+}

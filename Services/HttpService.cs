@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Skrawl.Helpers;
+using Microsoft.JSInterop;
 
 namespace Skrawl.Services
 {
@@ -26,7 +27,8 @@ namespace Skrawl.Services
             NavigationManager navigationManager,
             ILocalStorageService localStorageService,
             IConfiguration configuration
-        ) {
+        )
+        {
             _httpClient = httpClient;
             _navigationManager = navigationManager;
             _localStorageService = localStorageService;
@@ -42,7 +44,8 @@ namespace Skrawl.Services
         public async Task<T> Post<T>(string uri, object value = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            if (value != null) {
+            if (value != null)
+            {
                 request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
             }
             return await sendRequest<T>(request);
@@ -51,7 +54,8 @@ namespace Skrawl.Services
         public async Task Post(string uri, object value = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
-            if (value != null) {
+            if (value != null)
+            {
                 request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
             }
             await sendRequest(request);

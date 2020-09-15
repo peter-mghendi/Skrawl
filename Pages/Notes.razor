@@ -4,11 +4,14 @@
 
 <div class="d-flex mb-4">
 <h3 class="mr-auto">Notes</h3>
+<button class="btn btn-outline-success mr-2" @onclick="@(async () => await ShowEditNote())" disabled=@loading>
+    <span class="fas fa-plus mr-1"></span> New
+</button>
 <button class="btn btn-outline-primary" @onclick="@(async () => await RefreshNotes())" disabled=@loading>
     @if (loading) {
         <span class="spinner-grow spinner-grow-sm mr-1" role="status"></span>
     } 
-    @(loading ? "Refreshing..." : "Refresh  ")
+    @(loading ? "Refreshing..." : "Refresh")
 </button>
 </div>
 
@@ -44,6 +47,8 @@ else
     private bool loading = false;
     private IList<NoteDTO> notes;
 
+    [CascadingParameter] public IModalService Modal { get; set; }
+
     protected override async Task OnInitializedAsync()
     {
         await RefreshNotes();
@@ -52,17 +57,34 @@ else
     private async Task RefreshNotes()
     {
         loading = true;
-        notes = await NoteService.GetAll();
+        try
+        {
+            notes = await NoteService.GetAll();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
         loading = false;
     }
 
     private void ToggleExpandedItem(long id)
     {
-        if (expandedItem == id) {
-            expandedItem = -1;
-            return;
-        }
+        expandedItem = (expandedItem == id) ? -1 : id;
+    }
 
-        expandedItem = id;
+    async Task ShowEditNote(long noteId = -1)
+    {
+        var options = new ModalOptions() { Class = "blazored-modal container" };
+
+        var parameters = new ModalParameters();
+        parameters.Add(nameof(EditNote.NoteId), noteId);
+
+        var formModal = Modal.Show<EditNote>("Create Note", parameters, options);
+
+        var result = await formModal.Result;
+
+        if (result.Data is NoteDTO)
+            notes.Add((NoteDTO) result.Data);
     }
 }
