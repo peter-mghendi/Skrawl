@@ -37,9 +37,7 @@
 @code {
     [CascadingParameter] BlazoredModalInstance BlazoredModal { get; set; }
 
-    [Parameter] public long NoteId { get; set; }
-
-    private NoteDTO Note;
+    [Parameter] public NoteDTO Note { get; set; }
 
     private string error;
 
@@ -47,8 +45,7 @@
 
     protected override void OnInitialized()
     {
-        Note = new NoteDTO() { Id = -1 };
-        @* Note = NoteService.Load(NoteId); *@
+        Note ??= new NoteDTO() { Id = -1 };
     }
 
     private async void HandleValidSubmit()

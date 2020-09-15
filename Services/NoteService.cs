@@ -7,6 +7,8 @@ namespace Skrawl.Services
 {
     public class NoteService : INoteService
     {
+        private const string _notesUrl = "api/me/notes";
+
         private IHttpService _httpService;
 
         public NoteService(IHttpService httpService)
@@ -14,21 +16,18 @@ namespace Skrawl.Services
             _httpService = httpService;
         }
 
-        public async Task<IList<NoteDTO>> GetAll()
+        public async Task<List<NoteDTO>> GetAll()
         {
-            return (await _httpService.Get<IEnumerable<NoteDTO>>("api/me/notes")).ToList();
+            return (await _httpService.Get<IEnumerable<NoteDTO>>(_notesUrl)).ToList();
         }
 
-        public async Task<NoteDTO> Save(NoteDTO note)
+        public async Task<NoteDTO> Save(NoteDTO note) 
         {
-            return await (note.Id < 0 ?
-                _httpService.Post<NoteDTO>("api/me/notes", new
-                {
-                    title = note.Title,
-                    body = note.Body
-                }) :
-                default
-            );
+            if (note.Id < 0) 
+                return await _httpService.Post<NoteDTO>(_notesUrl, note);
+            
+            await _httpService.Put($"{_notesUrl}/{note.Id}", note);
+            return note;
         }
     }
 }

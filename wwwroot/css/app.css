@@ -220,3 +220,11 @@ textarea.form-control.invalid {
 .form-check-input.invalid ~ .validation-message {
     display: block;
 }
+
+.list-group-item .control {
+    display: none;
+}
+
+.list-group-item:hover .control {
+    display: inline-block;
+}

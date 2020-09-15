@@ -4,10 +4,10 @@
 
 <div class="d-flex mb-4">
 <h3 class="mr-auto">Notes</h3>
-<button class="btn btn-outline-success mr-2" @onclick="@(async () => await ShowEditNote())" disabled=@loading>
+<button class="btn btn-outline-success mr-2" @onclick="@(async () => await ShowEditNoteAsync())" disabled=@loading>
     <span class="fas fa-plus mr-1"></span> New
 </button>
-<button class="btn btn-outline-primary" @onclick="@(async () => await RefreshNotes())" disabled=@loading>
+<button class="btn btn-outline-primary" @onclick="@(async () => await RefreshNotesAsync())" disabled=@loading>
     @if (loading) {
         <span class="spinner-grow spinner-grow-sm mr-1" role="status"></span>
     } 
@@ -15,46 +15,51 @@
 </button>
 </div>
 
-@if (notes == null)
+@if (loading)
 {
     <p><em>Loading...</em></p>
 }
 else
 {
-<ul class="list-group list-group-flush">
-    @foreach (var note in notes)
-    {
-        <li class="list-group-item">
-            <div class="d-flex">
-            <p class="lead mr-auto">@note.Title</p>
-            @if (!string.IsNullOrWhiteSpace(note.Body)) {
-                <button class="btn" @onclick="() => ToggleExpandedItem(note.Id)">
-                    <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
-                </button>
-            }    
-            </div>
+    <ul class="list-group list-group-flush">
+        @foreach (var note in notes)
+        {
+            <li class="list-group-item">
+                <div class="d-flex">
+                <p class="lead mr-auto">@note.Title</p>
 
-            @if (!string.IsNullOrWhiteSpace(note.Body)) {
-                <p class="details @(expandedItem == note.Id ? "" : "d-none")">@note.Body</p>
-            }
-        </li>
-    }
-</ul>
+                @if (!string.IsNullOrWhiteSpace(note.Body)) {
+                    <button class="btn control" @onclick="() => ToggleExpandedItem(note.Id)">
+                        <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
+                    </button>
+                }    
+                <button class="btn control" @onclick="async () => await ShowEditNoteAsync(note)">
+                    <i class="fas fa-edit"></i>
+                </button>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(note.Body)) {
+                    <p class="details @(expandedItem == note.Id ? "" : "d-none")">@note.Body</p>
+                }
+            </li>
+        }
+    </ul>
 }
 
 @code {
     private long expandedItem = -1;
     private bool loading = false;
-    private IList<NoteDTO> notes;
+    private List<NoteDTO> notes = new List<NoteDTO>();
+    private IList<long> busy = new List<long>();
 
     [CascadingParameter] public IModalService Modal { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
-        await RefreshNotes();
+        await RefreshNotesAsync();
     }
 
-    private async Task RefreshNotes()
+    private async Task RefreshNotesAsync()
     {
         loading = true;
         try
@@ -73,18 +78,19 @@ else
         expandedItem = (expandedItem == id) ? -1 : id;
     }
 
-    async Task ShowEditNote(long noteId = -1)
+    async Task ShowEditNoteAsync(NoteDTO note = null)
     {
+        bool isNew = note == null;
         var options = new ModalOptions() { Class = "blazored-modal container" };
 
         var parameters = new ModalParameters();
-        parameters.Add(nameof(EditNote.NoteId), noteId);
+        parameters.Add(nameof(EditNote.Note), note);
 
-        var formModal = Modal.Show<EditNote>("Create Note", parameters, options);
+        var formModal = Modal.Show<EditNote>((isNew ? "Create" : "Edit") + " Note", parameters, options);
 
-        var result = await formModal.Result;
-
-        if (result.Data is NoteDTO)
-            notes.Add((NoteDTO) result.Data);
+        var data = (await formModal.Result).Data as NoteDTO;
+        
+        if (isNew) notes.Add(data);
+        else notes[notes.FindIndex(n => n.Id == data.Id)] = data;
     }
 }

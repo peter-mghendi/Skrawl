@@ -41,6 +41,16 @@ namespace Skrawl.Services
             return await sendRequest<T>(request);
         }
 
+        public async Task Put(string uri, object value = null)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Put, uri);
+            if (value != null)
+            {
+                request.Content = new StringContent(JsonSerializer.Serialize(value), Encoding.UTF8, "application/json");
+            }
+            await sendRequest(request);
+        }
+
         public async Task<T> Post<T>(string uri, object value = null)
         {
             var request = new HttpRequestMessage(HttpMethod.Post, uri);
