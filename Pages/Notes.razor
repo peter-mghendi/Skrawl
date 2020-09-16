@@ -17,7 +17,10 @@
 
 @if (loading)
 {
-    <p><em>Loading...</em></p>
+    <button class="btn" disabled>
+        <span class="spinner-border spinner-border-sm mr-1" role="status"></span>
+        Loading...
+    </button>
 }
 else
 {
@@ -33,16 +36,22 @@ else
                             <i class="fas fa-chevron-@(expandedItem == note.Id ? "up" : "down")"></i>
                         </button>
                     }    
-                    <button class="btn control" @onclick="async () => await ShowEditNoteAsync(note)">
+                    <button class="btn control" @onclick="async () => await ShowEditNoteAsync(note)" disabled=@(deleting.Contains(note.Id))>
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn control" @onclick="async () => await DeleteNoteAsync(note.Id)">
-                        <i class="fas fa-trash-alt"></i>
+                    <button class="btn control" @onclick="async () => await DeleteNoteAsync(note.Id)" disabled=@(deleting.Contains(note.Id))>
+                        @if (deleting.Contains(note.Id)) {
+                            <span class="spinner-border spinner-border-sm mr-1" role="status"></span>
+                        } 
+                        else
+                        {
+                            <i class="fas fa-trash-alt"></i>
+                        }
                     </button>
                 </div>
 
                 @if (!string.IsNullOrWhiteSpace(note.Body)) {
-                    <p class="details @(expandedItem == note.Id ? "" : "d-none")">@note.Body</p>
+                    <p class="details text-muted mt-3 @(expandedItem == note.Id ? "" : "d-none")">@note.Body</p>
                 }
             </li>
         }
@@ -53,7 +62,7 @@ else
     private long expandedItem = -1;
     private bool loading = false;
     private List<NoteDTO> notes = new List<NoteDTO>();
-    private IList<long> busy = new List<long>();
+    private List<long> deleting = new List<long>();
 
     [CascadingParameter] public IModalService Modal { get; set; }
 
@@ -92,14 +101,23 @@ else
         var formModal = Modal.Show<EditNote>((isNew ? "Create" : "Edit") + " Note", parameters, options);
 
         var data = (await formModal.Result).Data as NoteDTO;
-        
+
         if (isNew) notes.Add(data);
         else notes[notes.FindIndex(n => n.Id == data.Id)] = data;
     }
 
     async Task DeleteNoteAsync(long id)
     {
-        var note = await NoteService.DeleteAsync(id);
-        notes.RemoveAll(n => n.Id == note.Id);
+        deleting.Add(id);
+
+        try
+        {
+            var note = await NoteService.DeleteAsync(id);
+            notes.RemoveAll(n => n.Id == note.Id);
+        }
+        catch (Exception)
+        {
+            deleting.Remove(id);
+        }
     }
 }
