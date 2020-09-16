@@ -6,6 +6,8 @@ namespace Skrawl.Services
 {
     public interface INoteService
     {
-        Task<IEnumerable<NoteDTO>> GetAll();
+        Task<List<NoteDTO>> GetAllAsync();
+        Task<NoteDTO> SaveAsync(NoteDTO note);
+        Task<NoteDTO> DeleteAsync(long id);
     }
 }

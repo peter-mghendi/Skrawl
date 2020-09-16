@@ -8,6 +8,7 @@
     <base href="/Skrawl/" />
     <link href="css/bootstrap/bootstrap.min.css" rel="stylesheet" />
     <link href='https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.13.1/css/all.css' rel='stylesheet'>
+    <link href="_content/Blazored.Modal/blazored-modal.css" rel="stylesheet" />
     <link href="css/app.css" rel="stylesheet" />
     <link href="manifest.json" rel="manifest" />
     <link rel="apple-touch-icon" sizes="512x512" href="icon-512.png" />
@@ -15,9 +16,10 @@
 
 <body>
     <app class="">
-        <div class="position-absolute w-100 text-center" style="top: 40vh;">
+        <div class="position-absolute w-100 text-center" style="top: 30vh;">
+            <span class="spinner-grow mb-4" role="status"></span>
             <h1 class="display-4">Skrawl</h1>
-            <p class="lead"><i class="fas fa-spin fa-spinner"></i> The application is loading...</p>
+            <p class="lead">The application is loading...</p>
         </div>
     </app>
 
@@ -27,6 +29,8 @@
         <a class="dismiss">🗙</a>
     </div>
     <script src="_framework/blazor.webassembly.js"></script>
+    <script src="_content/Blazored.Modal/blazored.modal.js"></script>
+    <script src="js/connection.js"></script>
     <script>navigator.serviceWorker.register('service-worker.js');</script>
 </body>
 

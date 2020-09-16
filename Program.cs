@@ -9,6 +9,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Skrawl.Services;
 using Skrawl.Helpers;
+using Blazored.Modal;
+using Blazored.Modal.Services;
 
 namespace Skrawl
 {
@@ -19,14 +21,16 @@ namespace Skrawl
             var builder = WebAssemblyHostBuilder.CreateDefault(args);
             builder.RootComponents.Add<App>("app");
 
-             builder.Services
-                .AddScoped<IAuthenticationService, AuthenticationService>()
-                .AddScoped<IUserService, UserService>()
-                .AddScoped<IHttpService, HttpService>()
-                .AddScoped<ILocalStorageService, LocalStorageService>();
+            builder.Services
+                .AddBlazoredModal()
+               .AddScoped<IAuthenticationService, AuthenticationService>()
+               .AddScoped<INoteService, NoteService>()
+               .AddScoped<IHttpService, HttpService>()
+               .AddScoped<ILocalStorageService, LocalStorageService>();
 
             // configure http client
-            builder.Services.AddScoped(x => {
+            builder.Services.AddScoped(x =>
+            {
                 var apiUrl = new Uri(builder.Configuration["apiUrl"]);
 
                 // use fake backend if "fakeBackend" is "true" in appsettings.json

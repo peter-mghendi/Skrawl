@@ -1,0 +1,27 @@
+﻿@implements IDisposable
+@inject IJSRuntime JSRuntime
+
+<span class="oi oi-link-@indicator.Item1 text-@indicator.Item2 mx-2" aria-hidden="true"></span>
+
+@code 
+{
+    private bool _isOnline { get; set; }
+
+    private (string, string) indicator => _isOnline ? 
+        ("intact", "success") : 
+        ("broken", "danger");
+
+    [JSInvokable("Connection.StatusChanged")]
+    public void OnConnectionStatusChanged(bool isOnline)
+    {
+        if (_isOnline != isOnline) _isOnline = isOnline;
+        StateHasChanged();
+    }
+
+    protected override void OnInitialized() {
+        base.OnInitialized();
+        JSRuntime.InvokeVoidAsync("Connection.Initialize", DotNetObjectReference.Create(this));
+    }
+
+    public void Dispose() => JSRuntime.InvokeVoidAsync("Connection.Dispose");
+}
